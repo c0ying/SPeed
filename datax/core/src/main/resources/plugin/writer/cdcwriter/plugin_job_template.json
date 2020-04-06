@@ -1,0 +1,19 @@
+{
+    "name": "cdcwriter",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "jdbcUrl": "",
+        "tableMeta": [{
+        	"table":"",
+        	"pk":"",
+        	"schema":"",
+        	"i_column":[],
+        	"u_column":[],
+        	"map":{
+        		"schema":"",
+        		"table":""
+        	}
+        }]
+    }
+}

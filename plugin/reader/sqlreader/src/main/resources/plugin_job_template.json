@@ -1,0 +1,15 @@
+{
+    "name": "sqlreader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [],
+        "connection": [
+            {
+            "jdbcUrl": [],
+            "table": []
+            }
+        ],
+        "where": ""
+    }
+}
