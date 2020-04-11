@@ -26,7 +26,7 @@ import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseTypeIdentification;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
-import com.alibaba.datax.plugin.rdbms.util.listener.DataSourceInitManager;
+import com.alibaba.datax.plugin.rdbms.util.DataSourceInitManager;
 import com.alibaba.datax.plugin.rdbms.writer.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
 import com.alibaba.druid.pool.DruidDataSource;
@@ -215,7 +215,10 @@ public class CommonRdbmsWriter {
 		public Task() {}
 
         public void init(Configuration writerSliceConfig) {
-        	
+            //TODO: 数据库连接池模式
+            if (writerSliceConfig.getBool("initDataSource",false)){
+                DataSourceInitManager.init(taskContext);
+            }
         	dataSource = (DataSource) taskContext.get(DataSourceInitManager.WDATASOURCE);
         	
             this.username = writerSliceConfig.getString(Key.USERNAME);
@@ -370,6 +373,7 @@ public class CommonRdbmsWriter {
         }
 
         public void destroy(Configuration writerSliceConfig) {
+            DataSourceInitManager.destory(taskContext);
         }
 
         protected void doBatchInsert(Connection connection, List<Record> buffer)

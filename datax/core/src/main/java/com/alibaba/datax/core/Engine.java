@@ -36,8 +36,6 @@ public class Engine {
 
     private static String DEFAULT_RUNTIME_MODE = "standalone";
 
-    private List<JobContainer> multiJobContainers = new ArrayList<>();
-    
     //
     public static final Configuration CORE_CONFIGURATION = ConfigurationInitialize.CORE_CONFIGURATION;
     public static final Configuration PLUGIN_CONFIGURATION = ConfigurationInitialize.PLUGIN_CONFIGURATION;
@@ -57,16 +55,17 @@ public class Engine {
 
         long instanceId;
         int taskGroupId = -1;
+        List<JobContainer> multiJobContainers = new ArrayList<>();
         if (isJob) {
             //分拆JobContent
             Object jobContents = allConf.get(CoreConstant.DATAX_JOB_CONTENT);
             allConf.set(CoreConstant.DATAX_CORE_CONTAINER_JOB_MODE, DEFAULT_RUNTIME_MODE);
             instanceId = allConf.getLong(
                     CoreConstant.DATAX_CORE_CONTAINER_JOB_ID, 0);
-            if (jobContents instanceof List){
+            if (jobContents instanceof List && ((List) jobContents).size() > 1){
                 for (int i = 0; i < ((List) jobContents).size(); i++) {
                     Configuration tmp = allConf.clone();
-                    tmp.set(CoreConstant.DATAX_JOB_CONTENT, allConf.get(CoreConstant.DATAX_JOB_CONTENT+i));
+                    tmp.set(CoreConstant.DATAX_JOB_CONTENT, Arrays.asList(allConf.get(CoreConstant.DATAX_JOB_CONTENT+"["+i+"]")));
                     container = new JobContainer(tmp);
                     multiJobContainers.add((JobContainer) container);
                 }

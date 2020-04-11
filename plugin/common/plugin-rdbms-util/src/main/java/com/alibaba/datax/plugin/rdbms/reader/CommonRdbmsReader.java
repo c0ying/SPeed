@@ -2,9 +2,7 @@ package com.alibaba.datax.plugin.rdbms.reader;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,20 +11,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.datax.common.base.TaskGroupContext;
-import com.alibaba.datax.common.element.BoolColumn;
-import com.alibaba.datax.common.element.BytesColumn;
-import com.alibaba.datax.common.element.DateColumn;
-import com.alibaba.datax.common.element.DoubleColumn;
-import com.alibaba.datax.common.element.LongColumn;
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
@@ -42,8 +30,6 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseTypeIdentification;
 import com.alibaba.datax.plugin.rdbms.util.PoolJdbcConnectionFactory;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
-import com.alibaba.datax.plugin.rdbms.util.listener.DataSourceInitManager;
-import com.alibaba.druid.pool.DruidDataSource;
 import com.google.common.collect.Lists;
 
 public class CommonRdbmsReader {
@@ -147,6 +133,8 @@ public class CommonRdbmsReader {
 			this.jdbcUrl = readerSliceConfig.getString(Key.JDBC_URL);
 			this.dataBaseType = DataBaseTypeIdentification.getJdbcDataBaseType(jdbcUrl);
 
+			//TODO: 单任务多线程读取
+			//
 			Integer readerChannel = readerSliceConfig.getInt(Key.READER_CHANNEL);
 			if (readerChannel != null && readerChannel > 1) {
 				multiReadModel = true;

@@ -28,7 +28,7 @@
     </appender>
 
     <appender name="DIRTYRECORD" class="ch.qos.logback.core.FileAppender">
-        <file>${log.dir}/dirtyLog/job-%X{jobId}-dirtyRecord.log</file>
+        <file>${log.dir}/dirtyLog/job-${jobId}-dirtyRecord.log</file>
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
