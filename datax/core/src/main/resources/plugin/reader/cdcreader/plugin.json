@@ -1,6 +1,0 @@
-{
-    "name": "cdcreader",
-    "class": "com.jingxin.datax.plugin.reader.cdc.CDCReader",
-    "description": "",
-    "developer": "jingxin"
-}

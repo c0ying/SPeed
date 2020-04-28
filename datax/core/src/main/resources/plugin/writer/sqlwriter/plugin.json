@@ -1,6 +1,0 @@
-{
-    "name": "sqlwriter",
-    "class": "com.jingxin.datax.plugin.writer.sqlwriter.SqlWriter",
-    "description": "",
-    "developer": "jingxin"
-}

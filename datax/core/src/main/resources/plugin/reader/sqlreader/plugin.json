@@ -1,6 +1,0 @@
-{
-    "name": "sqlreader",
-    "class": "com.jingxin.datax.plugin.reader.reader.SqlReader",
-    "description": "",
-    "developer": "jingxin"
-}

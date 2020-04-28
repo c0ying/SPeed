@@ -1,6 +1,0 @@
-{
-    "name": "cdcwriter",
-    "class": "com.jingxin.datax.plugin.writer.cdc.CDCWriter",
-    "description": "",
-    "developer": "jingxin"
-}
