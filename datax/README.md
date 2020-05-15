@@ -73,7 +73,9 @@
    {
        "code":200,//成功；200:成功;400:请求有误;500:服务端异常;501:失败
        "msg":"成功",
-       “jobId”:1234//任务编码
+       "data": {
+           "jobId":1234 //任务编码
+       }
    }
    ```
 
@@ -170,17 +172,34 @@
    {
        "code":200,//成功；200:成功;400:请求有误;500:服务端异常;501:失败
        "msg":"成功",
-       "jobId":1234,
-       "state":{
-           "state":"RUNNING",//运行中;SUCCEEDED:成功;FAILED:失败;KILLING:取消中;KILLED:已取消
-           "timestamp":1588060001430,//服务器当前时间
-           "startTimestamp":1588060000430,//开始时间
-           "endTimestamp":1588060001430,//结束时间
+       "data": {
+         "jobId":1234,
+            "state":{
+                "state":"RUNNING",//运行中;SUCCEEDED:成功;FAILED:失败;KILLING:取消中;KILLED:已取消
+                "timestamp":1588060001430,//服务器当前时间
+                "startTimestamp":1588060000430,//开始时间
+                "endTimestamp":1588060001430,//结束时间
+            }
        }
    }
    ```
 
-   
+ 4. 获取任务运行日志
+
+    ```
+    GET http://Path:Port/jobLog?jobId=${jobId}
+    ```
+    
+    ```json
+       {
+           "code":200,//成功；200:成功;400:请求有误;500:服务端异常;501:失败
+           "msg":"成功",
+           "data": {
+             "jobId":1234,
+             "log":"xxxx"
+           }
+       }
+    ```
 
 ### 未被公开的transformer 转换器
 

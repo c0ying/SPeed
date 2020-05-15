@@ -1,15 +1,5 @@
 package com.alibaba.datax.core.job;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.datax.common.constant.PluginType;
 import com.alibaba.datax.common.element.ColumnCast;
 import com.alibaba.datax.common.exception.DataXException;
@@ -41,6 +31,16 @@ import com.alibaba.datax.core.util.container.LoadUtil;
 import com.alibaba.datax.dataxservice.face.domain.enums.ExecuteMode;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by jingxing on 14-8-24.
@@ -100,6 +100,7 @@ public class JobContainer extends AbstractContainer {
                     this.jobId);
         }
 
+        MDC.put("jobId", String.valueOf(this.jobId));
         errorLimit = new ErrorRecordChecker(configuration);
         
         // 绑定column转换信息

@@ -10,132 +10,34 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>${log.dir}/${ymd}/${log.file.name}.log</file>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir}/${log.file.name}.log</file>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n</pattern>
+            <pattern>%X{jobId}-%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n</pattern>
+            <charset>UTF-8</charset>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/${ymd}/${log.file.name}.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <MaxHistory>300</MaxHistory>
+        </rollingPolicy>
     </appender>
 
-    <appender name="PERF" class="ch.qos.logback.core.FileAppender">
-        <file>${perf.dir}/${ymd}/${log.file.name}.log</file>
+    <!-- 按照每天生成日志文件(脏数据专用)-->
+    <appender name="DIRTYRECORD" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir}/job-dirtyRecord.log</file>
         <encoder>
-            <pattern>%msg%n</pattern>
+            <pattern>%X{jobId}-%msg%n</pattern>
+            <charset>UTF-8</charset>
         </encoder>
-    </appender>
-
-    <appender name="DIRTYRECORD" class="ch.qos.logback.core.FileAppender">
-        <file>${log.dir}/dirtyLog/job-${jobId}-dirtyRecord.log</file>
-        <encoder>
-            <pattern>%msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <!-- 按照每天生成日志文件(对 DataX 不适应，DataX 是一个进程一个日志) -->
-    <!--
-    <appender name="FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <Encoding>UTF-8</Encoding>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file.name}-${byMillionSecond}.log</FileNamePattern>
-            <MaxHistory>31</MaxHistory>
+            <fileNamePattern>${log.dir}/${ymd}/job-dirtyRecord.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <MaxHistory>300</MaxHistory>
         </rollingPolicy>
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
-            </pattern>
-        </encoder>
     </appender>
-    -->
-    <!-- 按照每天生成日志文件(给用户查看进度使用的)
-    <appender name="USER_FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
-            <evaluator>
-                <expression>logger.endsWith("MasterContainerCollector") || null != throwable</expression>
-            </evaluator>
-            <OnMatch>ACCEPT</OnMatch>
-            <OnMismatch>DENY</OnMismatch>
-        </filter>
-
-        <Encoding>UTF-8</Encoding>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-user.log</FileNamePattern>
-            <MaxHistory>31</MaxHistory>
-        </rollingPolicy>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
-            </pattern>
-        </layout>
-    </appender>
-    -->
-
-    <!-- 按照每天生成日志文件(脏数据专用)
-    <appender name="BAD_RECORD_FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
-            <evaluator>
-                <expression>logger.endsWith("StdoutPluginCollector") || null != throwable</expression>
-            </evaluator>
-            <OnMatch>ACCEPT</OnMatch>
-            <OnMismatch>DENY</OnMismatch>
-        </filter>
-
-        <Encoding>UTF-8</Encoding>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-badrecord.log</FileNamePattern>
-            <MaxHistory>31</MaxHistory>
-        </rollingPolicy>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
-            </pattern>
-        </layout>
-    </appender>
-    -->
-
-    <!-- 按照每天生成日志文件（给开发查看普通运行信息的）
-    <appender name="DEV_FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-
-        <Encoding>UTF-8</Encoding>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-dev.log</FileNamePattern>
-            <MaxHistory>30</MaxHistory>
-        </rollingPolicy>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
-            </pattern>
-        </layout>
-    </appender>
-    -->
-
-    <!-- 按照每天生成日志文件（给开发查看全部调试信息的）
-    <appender name="DEBUG_FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>DEBUG</level>
-        </filter>
-
-        <Encoding>UTF-8</Encoding>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-debug.log</FileNamePattern>
-            <MaxHistory>30</MaxHistory>
-        </rollingPolicy>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
-            </pattern>
-        </layout>
-    </appender>
-    -->
-
-    <logger name="com.alibaba.datax.common.statistics.PerfRecord"  level="INFO" additivity="false">
-        <appender-ref ref="PERF" />
-    </logger>
 
     <logger name="DirtyRecordLog"  level="ERROR" additivity="false">
         <appender-ref ref="DIRTYRECORD" />

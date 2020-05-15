@@ -51,8 +51,8 @@ public class ResponseResult<T> implements Serializable{
 			this.code = ResponseStatus.SUCCESS.getCode();
 			this.msg = ResponseStatus.SUCCESS.getText();
 		}else {
-			this.code = ResponseStatus.SUCCESS.getCode();
-			this.msg = ResponseStatus.SUCCESS.getText();
+			this.code = ResponseStatus.FAIL.getCode();
+			this.msg = ResponseStatus.FAIL.getText();
 		}
 	}
 	public String getMsg() {
@@ -66,6 +66,7 @@ public class ResponseResult<T> implements Serializable{
 	}
 	public void setCode(int code) {
 		this.code = code;
+		this.msg = ResponseStatus.codeOf(code).text;
 	}
 	
 	//返回状态
@@ -91,5 +92,13 @@ public class ResponseResult<T> implements Serializable{
 			return text;
 		}
 
+		public static ResponseStatus codeOf(int code){
+			for (ResponseStatus value : ResponseStatus.values()) {
+				if (value.code == code){
+					return value;
+				}
+			}
+			return null;
+		}
 	}
 }
