@@ -193,7 +193,7 @@ public class SingleTableSplitUtil {
     private static Pair<Object, Object> getPkRange(Configuration configuration,DataBaseType dataBaseType) {
         String pkRangeSQL = genPKRangeSQL(configuration);
 
-        int fetchSize = configuration.getInt(Constant.FETCH_SIZE);
+        int fetchSize = configuration.getInt(Constant.FETCH_SIZE,1000);
         String jdbcURL = configuration.getString(Key.JDBC_URL);
         String username = configuration.getString(Key.USERNAME);
         String password = configuration.getString(Key.PASSWORD);
