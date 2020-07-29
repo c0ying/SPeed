@@ -1,10 +1,5 @@
 package com.alibaba.datax.core.job.scheduler.processinner;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.job.scheduler.AbstractScheduler;
@@ -14,6 +9,11 @@ import com.alibaba.datax.core.taskgroup.TaskGroupContainer;
 import com.alibaba.datax.core.taskgroup.runner.TaskGroupContainerRunner;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ProcessInnerScheduler extends AbstractScheduler {
 
@@ -39,6 +39,9 @@ public abstract class ProcessInnerScheduler extends AbstractScheduler {
     @Override
     public void dealFailedStat(AbstractContainerCommunicator frameworkCollector, Throwable throwable) {
         this.taskGroupContainerExecutorService.shutdownNow();
+        try {
+            taskGroupContainerExecutorService.awaitTermination(5, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {}
         throw DataXException.asDataXException(
                 FrameworkErrorCode.PLUGIN_RUNTIME_ERROR, throwable);
     }

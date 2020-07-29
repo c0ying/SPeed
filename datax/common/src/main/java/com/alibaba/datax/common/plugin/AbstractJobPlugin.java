@@ -20,6 +20,8 @@ public abstract class AbstractJobPlugin extends AbstractPlugin {
 		this.jobPluginCollector = jobPluginCollector;
 	}
 
+	public void errorHandle(Exception exception){}
+
 	private JobPluginCollector jobPluginCollector;
 
 }

@@ -157,7 +157,12 @@ public class JobContainer extends AbstractContainer {
                 System.gc();
             }
 
+            //@cyh;job错误后续处理工作
+            if (e instanceof Exception){
+                this.errorJobHandler((Exception) e);
+            }
 
+            //job 统计信息汇报
             if (super.getContainerCommunicator() == null) {
                 // 由于 containerCollector 是在 scheduler() 中初始化的，所以当在 scheduler() 之前出现异常时，需要在此处对 containerCollector 进行初始化
 
@@ -970,6 +975,18 @@ public class JobContainer extends AbstractContainer {
         LOG.info("DataX Writer.Job [{}] do post work.",
                 this.writerPluginName);
         this.jobWriter.post();
+        classLoaderSwapper.restoreCurrentThreadClassLoader();
+    }
+
+    private void errorJobHandler(Exception exception){
+        classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(PluginType.READER, this.readerPluginName));
+        LOG.info("DataX Reader.Job [{}] do error handler.", this.readerPluginName);
+        this.jobReader.errorHandle(exception);
+        classLoaderSwapper.restoreCurrentThreadClassLoader();
+
+        classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(PluginType.WRITER, this.writerPluginName));
+        LOG.info("DataX Writer.Job [{}] do error handler.", this.writerPluginName);
+        this.jobWriter.errorHandle(exception);
         classLoaderSwapper.restoreCurrentThreadClassLoader();
     }
 
