@@ -979,15 +979,29 @@ public class JobContainer extends AbstractContainer {
     }
 
     private void errorJobHandler(Exception exception){
-        classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(PluginType.READER, this.readerPluginName));
-        LOG.info("DataX Reader.Job [{}] do error handler.", this.readerPluginName);
-        this.jobReader.errorHandle(exception);
-        classLoaderSwapper.restoreCurrentThreadClassLoader();
+        if (this.jobReader != null){
+            classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(PluginType.READER, this.readerPluginName));
+            LOG.info("DataX Reader.Job [{}] do error handler.", this.readerPluginName);
+            try {
+                this.jobReader.errorHandle(exception);
+            } catch (Exception e) {
+                LOG.error("Reader job error handler occur exception");
+                e.printStackTrace();
+            }
+            classLoaderSwapper.restoreCurrentThreadClassLoader();
+        }
 
-        classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(PluginType.WRITER, this.writerPluginName));
-        LOG.info("DataX Writer.Job [{}] do error handler.", this.writerPluginName);
-        this.jobWriter.errorHandle(exception);
-        classLoaderSwapper.restoreCurrentThreadClassLoader();
+        if (this.jobWriter != null){
+            classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(PluginType.WRITER, this.writerPluginName));
+            LOG.info("DataX Writer.Job [{}] do error handler.", this.writerPluginName);
+            try {
+                this.jobWriter.errorHandle(exception);
+            } catch (Exception e) {
+                LOG.error("Writer job error handler occur exception");
+                e.printStackTrace();
+            }
+            classLoaderSwapper.restoreCurrentThreadClassLoader();
+        }
     }
 
     /**

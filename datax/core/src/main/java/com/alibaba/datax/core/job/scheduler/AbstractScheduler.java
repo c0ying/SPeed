@@ -94,7 +94,7 @@ public abstract class AbstractScheduler {
                     errorLimit.checkRecordLimit(nowJobContainerCommunication);
                 } catch (Exception e) {
                     LOG.error("error threshold reached and stopping current running task", e);
-                    dealFailedStat(this.containerCommunicator, nowJobContainerCommunication.getThrowable());
+                    dealFailedStat(this.containerCommunicator, e);
                     throw e;
                 }
 
