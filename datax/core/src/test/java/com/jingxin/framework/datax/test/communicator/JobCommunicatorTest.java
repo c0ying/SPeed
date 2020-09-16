@@ -1,16 +1,15 @@
 package com.jingxin.framework.datax.test.communicator;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.LocalJobCommunicationManager;
 import com.alibaba.datax.core.statistics.container.communicator.job.StandAloneJobContainerCommunicator;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JobCommunicatorTest {
 
@@ -29,7 +28,7 @@ public class JobCommunicatorTest {
 		}
 		
 		communicator.registerCommunication(configurations);
-		System.out.println(communicator.getCommunicationMap());
+		System.out.println(communicator.getTGCommunicationMap());
 	}
 	
 	@Test

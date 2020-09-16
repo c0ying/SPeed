@@ -1,8 +1,7 @@
 package com.alibaba.datax.core.job.scheduler.processinner;
 
 import com.alibaba.datax.core.statistics.communication.Communication;
-import com.alibaba.datax.core.statistics.communication.LocalJobCommunicationManager;
-import com.alibaba.datax.core.statistics.container.communicator.AbstractContainerCommunicator;
+import com.alibaba.datax.core.statistics.container.communicator.job.AbstractJobContainerCommunicator;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
 
 /**
@@ -10,13 +9,13 @@ import com.alibaba.datax.dataxservice.face.domain.enums.State;
  */
 public class StandAloneScheduler extends ProcessInnerScheduler{
 
-    public StandAloneScheduler(AbstractContainerCommunicator containerCommunicator) {
+    public StandAloneScheduler(AbstractJobContainerCommunicator containerCommunicator) {
         super(containerCommunicator);
     }
 
     @Override
     protected boolean isJobKilling(Long jobId) {
-    	Communication communication = LocalJobCommunicationManager.getInstance().getJobCommunication(jobId);
+    	Communication communication = jobContainerCommunicator.getJobCommunication();
         if (communication.getState() != null && (
         		communication.getState().value() == State.KILLING.value()
         		|| communication.getState().value() == State.KILLED.value())) {

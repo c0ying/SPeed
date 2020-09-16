@@ -1,15 +1,19 @@
 package com.jingxin.framework.datax.enhance.api.restful;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.alibaba.datax.core.job.JobControllerPanel;
+import com.jingxin.framework.datax.enhance.core.job.JobControllerPanel;
 import com.jingxin.framework.datax.enhance.network.http.action.Action;
 import com.jingxin.framework.datax.enhance.network.http.bean.response.VarResponseResult;
 import com.jingxin.framework.datax.enhance.network.http.route.RequestParam;
-
 import io.netty.handler.codec.http.FullHttpRequest;
+import org.apache.commons.lang3.StringUtils;
 
 public class JobKillAction implements Action<VarResponseResult>{
+
+	private JobControllerPanel jobControllerPanel;
+
+	public JobKillAction(){
+		jobControllerPanel = JobControllerPanel.instance;
+	}
 
 	@Override
 	public VarResponseResult act(RequestParam requestParam, FullHttpRequest req) {
@@ -20,7 +24,7 @@ public class JobKillAction implements Action<VarResponseResult>{
 			result.setMsg("jobId must not be null");
 		}else {
 			try {
-				JobControllerPanel.killJob(Long.parseLong(jobIdStr));
+				jobControllerPanel.killJob(Long.parseLong(jobIdStr));
 			} catch (Exception e) {
 				e.printStackTrace();
 				result.setStatus(false);

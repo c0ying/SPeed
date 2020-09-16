@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="log.dir" value="${datax.home}/log" />
+    <property name="perf.dir" value="${datax.home}/log_perf" />
+    <property name="log.file.name" value="speed_log" />
+    <timestamp key="ymd" datePattern="yyyy-MM-dd"/>
+    <timestamp key="byMillionSecond" datePattern="HH_mm_ss.SSS"/>
+
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir}/${log.file.name}.log</file>
+        <encoder>
+            <pattern>%X{jobId}-%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/${ymd}/${log.file.name}.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <MaxHistory>300</MaxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 按照每天生成日志文件(脏数据专用)-->
+    <appender name="DIRTYRECORD" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir}/job-dirtyRecord.log</file>
+        <encoder>
+            <pattern>%X{jobId}-%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/${ymd}/job-dirtyRecord.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <MaxHistory>300</MaxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="DirtyRecordLog"  level="ERROR" additivity="false">
+        <appender-ref ref="DIRTYRECORD" />
+    </logger>
+
+    <root level="${loglevel:-INFO}">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+        <!--
+        <appender-ref ref="USER_FILE" />
+        <appender-ref ref="BAD_RECORD_FILE" />
+        <appender-ref ref="DEV_FILE" />
+        <appender-ref ref="DEBUG_FILE" />
+        -->
+    </root>
+</configuration>

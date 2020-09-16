@@ -1,19 +1,19 @@
 package com.alibaba.datax.core.transport.exchanger;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.alibaba.datax.common.element.TerminateRecord;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.transformer.TransformerExecution;
 import com.alibaba.datax.core.transport.channel.Channel;
-import com.alibaba.datax.core.transport.record.TerminateRecord;
 import com.alibaba.datax.core.util.container.CoreConstant;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BufferedRecordTransformerReceiver extends TransformerExchanger implements RecordReceiver {
 

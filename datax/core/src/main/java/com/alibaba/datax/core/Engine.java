@@ -1,19 +1,5 @@
 package com.alibaba.datax.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.spi.ErrorCode;
 import com.alibaba.datax.common.statistics.PerfTrace;
@@ -27,6 +13,19 @@ import com.alibaba.datax.core.util.ConfigurationValidate;
 import com.alibaba.datax.core.util.ExceptionTracker;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 import com.alibaba.datax.core.util.container.CoreConstant;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Engine是DataX入口类，该类负责初始化Job或者Task的运行容器，并运行插件的Job或者Task逻辑
@@ -59,7 +58,7 @@ public class Engine {
         if (isJob) {
             //分拆JobContent
             Object jobContents = allConf.get(CoreConstant.DATAX_JOB_CONTENT);
-            allConf.set(CoreConstant.DATAX_CORE_CONTAINER_JOB_MODE, DEFAULT_RUNTIME_MODE);
+            //allConf.set(CoreConstant.DATAX_CORE_CONTAINER_JOB_MODE, DEFAULT_RUNTIME_MODE);
             instanceId = allConf.getLong(
                     CoreConstant.DATAX_CORE_CONTAINER_JOB_ID, 0);
             if (jobContents instanceof List && ((List) jobContents).size() > 1){

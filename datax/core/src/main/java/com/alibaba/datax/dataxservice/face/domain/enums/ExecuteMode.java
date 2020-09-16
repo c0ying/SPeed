@@ -31,7 +31,7 @@ public enum ExecuteMode implements EnumStrVal {
 
     public static ExecuteMode toExecuteMode(String modeName) {
         for (ExecuteMode mode : ExecuteMode.values()) {
-            if (mode.value().equals(modeName)) {
+            if (mode.value().equalsIgnoreCase(modeName)) {
                 return mode;
             }
         }

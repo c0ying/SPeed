@@ -20,7 +20,7 @@ public class TaskGroupContainerRunner implements Runnable {
 	public void run() {
 		try {
             Thread.currentThread().setName(
-                    String.format("taskGroup-%d", this.taskGroupContainer.getTaskGroupId()));
+                    String.format("job-%s-taskGroup-%d", this.taskGroupContainer.getJobId(), this.taskGroupContainer.getTaskGroupId()));
             this.taskGroupContainer.start();
 			this.state = State.SUCCEEDED;
 		} catch (Throwable e) {

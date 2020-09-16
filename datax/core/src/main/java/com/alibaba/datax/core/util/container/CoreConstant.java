@@ -1,8 +1,8 @@
 package com.alibaba.datax.core.util.container;
 
-import java.io.File;
-
 import org.apache.commons.lang.StringUtils;
+
+import java.io.File;
 
 /**
  * Created by jingxing on 14-8-25.
@@ -36,6 +36,8 @@ public class CoreConstant {
 	public static final String DATAX_CORE_CONTAINER_TASK_FAILOVER_RETRYINTERVALINMSEC = "core.container.task.failOver.retryIntervalInMsec";
 
 	public static final String DATAX_CORE_CONTAINER_TASK_FAILOVER_MAXWAITINMSEC = "core.container.task.failOver.maxWaitInMsec";
+
+	public static final String DATAX_CORE_CONTAINER_TASK_HUNG_TIMEOUTINSEC = "core.container.task.hungTimeoutInSec";
 
     public static final String DATAX_CORE_DATAXSERVER_ADDRESS = "core.dataXServer.address";
 

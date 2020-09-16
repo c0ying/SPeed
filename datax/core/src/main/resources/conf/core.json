@@ -37,14 +37,29 @@
             "exchanger": {
                 "class": "com.alibaba.datax.core.plugin.BufferedRecordExchanger",
                 "bufferSize": 32
+            },
+            "record": {
+                "class": "com.alibaba.datax.common.record.DefaultRecord"
             }
         },
         "container": {
             "job": {
-                "reportInterval": 10000
+                "reportInterval": 10000,
+                "sleepInterval": 10000,
+                "mode": "distribute"
             },
             "taskGroup": {
-                "channel": 5
+                "channel": 5,
+                "sleepInterval": 100,
+                "reportInterval": 10000
+            },
+            "task": {
+                "failOver": {
+                    "maxRetryTimes": 1,
+                    "retryIntervalInMsec": 10000,
+                    "maxWaitInMsec": 60000
+                },
+                "hungTimeoutInSec": 1800
             },
             "trace": {
                 "enable": "false"
@@ -55,18 +70,23 @@
             "collector": {
                 "plugin": {
                     "taskClass": "com.alibaba.datax.core.statistics.plugin.task.StdoutPluginCollector",
-                    "maxDirtyNumber": 10
+                    "maxDirtyNumber": 5
                 }
             }
         },
         "meta":{
-        	"db":{
-        		"url":"jdbc:mysql://127.0.0.1:3306/test",
-        		"username":"root",
-        		"password":"mysql123"
-        	}
-        },
-        "executemode":"standalone"
+        	"redis": {
+                "host": "127.0.0.1",
+                "port": "6379",
+                "password": "",
+                "pool": {
+                    "maxTotal": 100,
+                    "maxIdle": 10,
+                    "maxWaitMills": 10000,
+                    "testOnBorrow": true
+                }
+            }
+        }
     },
     "webEntry":{
     	"port":8081

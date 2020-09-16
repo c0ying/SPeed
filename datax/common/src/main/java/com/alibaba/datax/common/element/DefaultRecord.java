@@ -1,8 +1,5 @@
 package com.alibaba.datax.common.element;
 
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.ClassSize;
 import com.alibaba.fastjson.JSON;
 

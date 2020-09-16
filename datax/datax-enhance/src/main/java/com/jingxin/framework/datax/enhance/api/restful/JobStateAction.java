@@ -1,14 +1,12 @@
 package com.jingxin.framework.datax.enhance.api.restful;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.alibaba.datax.core.statistics.communication.Communication;
-import com.alibaba.datax.core.statistics.communication.LocalJobCommunicationManager;
+import com.jingxin.framework.datax.enhance.core.statistics.communication.CommunicationManagerDelegateFactory;
 import com.jingxin.framework.datax.enhance.network.http.action.Action;
 import com.jingxin.framework.datax.enhance.network.http.bean.response.VarResponseResult;
 import com.jingxin.framework.datax.enhance.network.http.route.RequestParam;
-
 import io.netty.handler.codec.http.FullHttpRequest;
+import org.apache.commons.lang3.StringUtils;
 
 public class JobStateAction implements Action<VarResponseResult>{
 
@@ -22,7 +20,7 @@ public class JobStateAction implements Action<VarResponseResult>{
 		}else {
 			try {
 				Long jobId = Long.parseLong(jobIdStr);
-				Communication jobCommunication = LocalJobCommunicationManager.getInstance().getJobCommunication(jobId);
+				Communication jobCommunication = CommunicationManagerDelegateFactory.getJobCommunicationManager().getJobCommunication(jobId);
 				result.put("jobId", jobId);
 				result.put("state", jobCommunication);
 			} catch (NumberFormatException e) {

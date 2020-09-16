@@ -67,6 +67,13 @@
             <artifactId>janino</artifactId>
             <version>2.5.16</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>

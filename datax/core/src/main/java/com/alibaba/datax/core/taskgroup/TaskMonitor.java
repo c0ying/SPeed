@@ -16,16 +16,25 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskMonitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(TaskMonitor.class);
-    private static final TaskMonitor instance = new TaskMonitor();
-    private static long EXPIRED_TIME = 172800 * 1000;
+    //@cyh
+//    private static long EXPIRED_TIME = 172800 * 1000;
+    private long expired_time = -1;
 
     private ConcurrentHashMap<Integer, TaskCommunication> tasks = new ConcurrentHashMap<Integer, TaskCommunication>();
 
-    private TaskMonitor() {
+    private TaskMonitor() {}
+
+    private TaskMonitor(long expiredTime) {
+        this.expired_time = expiredTime;
     }
 
+    //@cyh 每个TaskGroup拥有独立的TaskMonitor
     public static TaskMonitor getInstance() {
-        return instance;
+        return new TaskMonitor();
+    }
+
+    public static TaskMonitor getInstance(long expiredTime) {
+        return new TaskMonitor(expiredTime);
     }
 
     public void registerTask(Integer taskid, Communication communication) {
@@ -33,7 +42,11 @@ public class TaskMonitor {
         if (communication.isFinished()) {
             return;
         }
-        tasks.putIfAbsent(taskid, new TaskCommunication(taskid, communication));
+        if (this.expired_time > 0){
+            tasks.putIfAbsent(taskid, new TaskCommunication(taskid, communication,this.expired_time));
+        }else{
+            tasks.putIfAbsent(taskid, new TaskCommunication(taskid, communication));
+        }
     }
 
     public void removeTask(Integer taskid) {
@@ -59,18 +72,29 @@ public class TaskMonitor {
 
 
     public static class TaskCommunication {
+        //@cyh,原值太大了，监控任务超时没效果
+        //private static long EXPIRED_TIME = 1800 * 1000;
         private Integer taskid;
         //记录最后更新的communication
         private long lastAllReadRecords = -1;
         //只有第一次，或者统计变更时才会更新TS
         private long lastUpdateComunicationTS;
         private long ttl;
+        //@cyh,原值太大了，监控任务超时没效果
+        private long expireTime = 1800 * 1000;
 
         private TaskCommunication(Integer taskid, Communication communication) {
             this.taskid = taskid;
             lastAllReadRecords = CommunicationTool.getTotalReadRecords(communication);
             ttl = System.currentTimeMillis();
             lastUpdateComunicationTS = ttl;
+        }
+
+        private TaskCommunication(Integer taskid, Communication communication, long expireTime) {
+            this(taskid, communication);
+            if (expireTime > 0){
+                this.expireTime = expireTime;
+            }
         }
 
         public void report(Communication communication) {
@@ -91,7 +115,7 @@ public class TaskMonitor {
         }
 
         private boolean isExpired(long lastUpdateComunicationTS) {
-            return System.currentTimeMillis() - lastUpdateComunicationTS > EXPIRED_TIME;
+            return System.currentTimeMillis() - lastUpdateComunicationTS > expireTime;
         }
 
         public Integer getTaskid() {

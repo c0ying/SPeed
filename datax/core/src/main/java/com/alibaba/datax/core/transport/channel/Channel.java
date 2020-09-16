@@ -1,10 +1,10 @@
 package com.alibaba.datax.core.transport.channel;
 
 import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.element.TerminateRecord;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.CommunicationTool;
-import com.alibaba.datax.core.transport.record.TerminateRecord;
 import com.alibaba.datax.core.util.container.CoreConstant;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;

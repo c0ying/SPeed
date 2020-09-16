@@ -1,14 +1,13 @@
 package com.alibaba.datax.core.statistics.communication;
 
+import com.alibaba.datax.dataxservice.face.domain.enums.State;
+import org.apache.commons.lang3.Validate;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.Validate;
-
-import com.alibaba.datax.dataxservice.face.domain.enums.State;
-
-public class LocalJobCommunicationManager {
+public class LocalJobCommunicationManager implements JobCommunicationManager {
 
 	private static Map<Long, Communication> JOB_COMMUNICATION = new ConcurrentHashMap<>();
 	
@@ -23,6 +22,7 @@ public class LocalJobCommunicationManager {
 		return localJobCommunicationManager;
 	}
 	
+	@Override
 	public Communication registerJobCommunication(Long jobId) {
 		if (!JOB_COMMUNICATION.containsKey(jobId)) {
 			Communication communication = new Communication();
@@ -34,12 +34,14 @@ public class LocalJobCommunicationManager {
 		return null;
 	}
 	
+	@Override
 	public void clean(Long jobId) {
 		JOB_COMMUNICATION.remove(jobId);
 		taskGroupCommunicationMap.remove(jobId);
 	}
 	
-	public void registerTaskGroupCommunication(long jobId,int taskGroupId, Communication communication) {
+	@Override
+	public void registerTaskGroupCommunication(long jobId, int taskGroupId, Communication communication) {
     	if (!taskGroupCommunicationMap.containsKey(jobId)) {
     		Map<Integer, Communication> tmp_map = new ConcurrentHashMap<Integer, Communication>();
     		tmp_map.put(taskGroupId, communication);
@@ -49,7 +51,8 @@ public class LocalJobCommunicationManager {
 		}
     }
 
-    public Communication getJobCommunication(long jobId) {
+    @Override
+	public Communication getJobCommunication(long jobId) {
 //    	if (!JOB_COMMUNICATION.containsKey(jobId)) {
 //			return null;
 //		}
@@ -70,33 +73,18 @@ public class LocalJobCommunicationManager {
      *
      * @return
      */
-    public Set<Integer> getTaskGroupIdSet(long jobId) {
+    @Override
+	public Set<Integer> getTaskGroupIdSet(long jobId) {
         return taskGroupCommunicationMap.get(jobId).keySet();
     }
 
-    public Communication getTaskGroupCommunication(long jobId, int taskGroupId) {
+    @Override
+	public Communication getTaskGroupCommunication(long jobId, int taskGroupId) {
         Validate.isTrue(taskGroupId >= 0, "taskGroupId不能小于0");
 
         return taskGroupCommunicationMap.get(jobId).get(taskGroupId);
     }
 
-    public void updateTaskGroupCommunication(long jobId,final int taskGroupId,
-                                                    final Communication communication) {
-        Validate.isTrue(taskGroupCommunicationMap.containsKey(
-        		jobId), String.format("taskGroupCommunicationMap中没有注册JobId[%d]的Communication，" +
-                "无法更新该taskGroup的信息", taskGroupId));
-        if (taskGroupCommunicationMap.containsKey(jobId)) {
-        	Communication oldCommunication = getTaskGroupCommunication(jobId, taskGroupId);
-        	if (communication.getStartTimestamp() <= 0 && oldCommunication.getStartTimestamp() > 0) {
-        		communication.setStartTimestamp(oldCommunication.getStartTimestamp());
-			}
-        	if (communication.getEndTimestamp() <= 0 && oldCommunication.getEndTimestamp() > 0) {
-        		communication.setEndTimestamp(oldCommunication.getEndTimestamp());
-			}
-        	taskGroupCommunicationMap.get(jobId).put(taskGroupId, communication);
-		}
-    }
-    
     public void updateJobCommunication(long jobId, Communication communication) {
     	Validate.isTrue(JOB_COMMUNICATION.containsKey(jobId), 
     			String.format("没有注册JobId[%d]的Communication，无法更新该Job的信息", jobId));
@@ -112,16 +100,13 @@ public class LocalJobCommunicationManager {
 		}
     }
 
-    public void clear(long jobId) {
-        taskGroupCommunicationMap.remove(jobId);
-        JOB_COMMUNICATION.remove(jobId);
-    }
-
-    public Map<Integer, Communication> getTaskGroupCommunicationMap(long jobId) {
+    @Override
+	public Map<Integer, Communication> getTaskGroupCommunicationMap(long jobId) {
         return taskGroupCommunicationMap.get(jobId);
     }
     
-    public Set<Long> getAllJobId() {
+    @Override
+	public Set<Long> getAllJobId() {
     	return JOB_COMMUNICATION.keySet();
     }
 }

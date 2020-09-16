@@ -1,18 +1,5 @@
 package com.alibaba.datax.core.taskgroup;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.datax.common.base.TaskGroupContext;
 import com.alibaba.datax.common.base.TaskGroupInfo;
 import com.alibaba.datax.common.constant.PluginType;
@@ -27,7 +14,8 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.AbstractContainer;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.CommunicationTool;
-import com.alibaba.datax.core.statistics.communication.LocalJobCommunicationManager;
+import com.alibaba.datax.core.statistics.container.communicator.taskgroup.AbstractTGContainerCommunicator;
+import com.alibaba.datax.core.statistics.container.communicator.taskgroup.DistributeTGContainerCommunicator;
 import com.alibaba.datax.core.statistics.container.communicator.taskgroup.StandaloneTGContainerCommunicator;
 import com.alibaba.datax.core.statistics.plugin.task.AbstractTaskPluginCollector;
 import com.alibaba.datax.core.taskgroup.runner.AbstractRunner;
@@ -39,12 +27,21 @@ import com.alibaba.datax.core.transport.exchanger.BufferedRecordExchanger;
 import com.alibaba.datax.core.transport.exchanger.BufferedRecordTransformerSender;
 import com.alibaba.datax.core.util.ClassUtil;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
-import com.alibaba.datax.core.util.GroovyJavaSupport;
 import com.alibaba.datax.core.util.TransformerUtil;
 import com.alibaba.datax.core.util.container.CoreConstant;
 import com.alibaba.datax.core.util.container.LoadUtil;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class TaskGroupContainer extends AbstractContainer {
     private static final Logger LOG = LoggerFactory
@@ -70,10 +67,14 @@ public class TaskGroupContainer extends AbstractContainer {
      */
     private String taskCollectorClass;
 
-    private TaskMonitor taskMonitor = TaskMonitor.getInstance();
-    
+    /**
+     * @cyh 每个TaskGroup拥有独立的TaskMonitor
+     */
+    private TaskMonitor taskMonitor;
+
     //@cyh
     private InheritableThreadLocal<TaskGroupContext> taskGroupContext = new InheritableThreadLocal<>();
+    private AbstractTGContainerCommunicator tgContainerCommunicator;
 
     public TaskGroupContainer(Configuration configuration) {
         super(configuration);
@@ -89,14 +90,20 @@ public class TaskGroupContainer extends AbstractContainer {
                 CoreConstant.DATAX_CORE_TRANSPORT_CHANNEL_CLASS);
         this.taskCollectorClass = this.configuration.getString(
                 CoreConstant.DATAX_CORE_STATISTICS_COLLECTOR_PLUGIN_TASKCLASS);
+
+        this.taskMonitor = TaskMonitor.getInstance(this.configuration.getLong(CoreConstant.DATAX_CORE_CONTAINER_TASK_HUNG_TIMEOUTINSEC, -1));
         //@cyh
         taskGroupContext.set(new TaskGroupContext());
 
     }
 
     private void initCommunicator(Configuration configuration) {
-        super.setContainerCommunicator(new StandaloneTGContainerCommunicator(configuration));
-
+        if (configuration.getString(CoreConstant.DATAX_CORE_CONTAINER_JOB_MODE,"standalone").equalsIgnoreCase("distribute")){
+            super.setContainerCommunicator(new DistributeTGContainerCommunicator(configuration));
+        }else{
+            super.setContainerCommunicator(new StandaloneTGContainerCommunicator(configuration));
+        }
+        this.tgContainerCommunicator = (AbstractTGContainerCommunicator) getContainerCommunicator();
     }
 
     public long getJobId() {
@@ -171,7 +178,8 @@ public class TaskGroupContainer extends AbstractContainer {
             while (true) {
             	//1.判断task状态
             	boolean failedOrKilled = false;
-            	Map<Integer, Communication> communicationMap = containerCommunicator.getCommunicationMap();
+            	//轮询TaskGroup下所有Task运行情况
+            	Map<Integer, Communication> communicationMap = tgContainerCommunicator.getTaskCommunicationMap();
             	for(Map.Entry<Integer, Communication> entry : communicationMap.entrySet()){
             		Integer taskId = entry.getKey();
             		Communication taskCommunication = entry.getValue();
@@ -188,7 +196,7 @@ public class TaskGroupContainer extends AbstractContainer {
                         taskFailedExecutorMap.put(taskId, taskExecutor);
             			if(taskExecutor.supportFailOver() && taskExecutor.getAttemptCount() < taskMaxRetryTimes){
                             taskExecutor.shutdown(); //关闭老的executor
-                            containerCommunicator.resetCommunication(taskId); //将task的状态重置
+                            tgContainerCommunicator.resetTaskCommunication(taskId); //将task的状态重置
             				Configuration taskConfig = taskConfigMap.get(taskId);
             				taskQueue.add(taskConfig); //重新加入任务列表
             			}else{
@@ -224,16 +232,37 @@ public class TaskGroupContainer extends AbstractContainer {
                 //后续任务不再进行
                 //现有任务终止执行
                 //@cyh
-                State jobState = LocalJobCommunicationManager.getInstance().getJobCommunication(jobId).getState();
-                if (jobState.value() == State.KILLING.value()) {
+//                State jobState = LocalJobCommunicationManager.getInstance().getJobCommunication(jobId).getState();
+                State tgState = ((AbstractTGContainerCommunicator) this.getContainerCommunicator()).getTGCommunication().getState();
+                if (tgState.value() == State.KILLING.value()) {
                 	for (TaskExecutor taskExecutor : runTasks) {
+                        communicationMap.get(taskExecutor.getTaskId()).setState(State.KILLING);
                 		taskExecutor.shutdown();
-                		taskMonitor.removeTask(taskExecutor.getTaskId());
+                        taskMonitor.report(taskExecutor.getTaskId(),this.tgContainerCommunicator.getTaskCommunication(taskExecutor.getTaskId()));
 					}
+                    reportTaskGroupCommunication(lastTaskGroupContainerCommunication, taskCountInThisTaskGroup);
                 	taskQueue.clear();
-                	for(Communication taskCommunication : communicationMap.values()){
-                		taskCommunication.setState(State.KILLED);
-                	}
+                	//等待子任务终止
+                	while(true){
+                	    boolean haveNotKilled = false;
+                        for (TaskExecutor taskExecutor : runTasks) {
+                            if (taskExecutor.isShutdown() && communicationMap.get(taskExecutor.getTaskId()).getState() == State.KILLING){
+                                communicationMap.get(taskExecutor.getTaskId()).setState(State.KILLED);
+                                taskMonitor.report(taskExecutor.getTaskId(),this.tgContainerCommunicator.getTaskCommunication(taskExecutor.getTaskId()));
+                            }
+                            if(!taskExecutor.isShutdown()){
+                                LOG.debug("TaskGroupId:{} taskId:{} is still running, try shutdown again",this.getTaskGroupId(), taskExecutor.getTaskId());
+                                taskExecutor.shutdown();
+                                haveNotKilled = true;
+                            }
+                        }
+                        if (!haveNotKilled) {
+                            break;
+                        }else{
+                            Thread.sleep(200);
+                        }
+                    }
+                    reportTaskGroupCommunication(lastTaskGroupContainerCommunication, taskCountInThisTaskGroup);
 					break;
 				}
                 //3.有任务未执行，且正在运行的任务数小于最大通道限制
@@ -243,6 +272,7 @@ public class TaskGroupContainer extends AbstractContainer {
                     Integer taskId = taskConfig.getInt(CoreConstant.TASK_ID);
                     int attemptCount = 1;
                     TaskExecutor lastExecutor = taskFailedExecutorMap.get(taskId);
+                    //失败任务重试
                     if(lastExecutor!=null){
                         attemptCount = lastExecutor.getAttemptCount() + 1;
                         long now = System.currentTimeMillis();
@@ -273,7 +303,7 @@ public class TaskGroupContainer extends AbstractContainer {
                     runTasks.add(taskExecutor);
 
                     //上面，增加task到runTasks列表，因此在monitor里注册。
-                    taskMonitor.registerTask(taskId, this.containerCommunicator.getCommunication(taskId));
+                    taskMonitor.registerTask(taskId, this.tgContainerCommunicator.getTaskCommunication(taskId));
 
                     taskFailedExecutorMap.remove(taskId);
                     LOG.info("taskGroup[{}] taskId[{}] attemptCount[{}] is started",
@@ -285,7 +315,6 @@ public class TaskGroupContainer extends AbstractContainer {
                 	// 成功的情况下，也需要汇报一次。否则在任务结束非常快的情况下，采集的信息将会不准确
                     lastTaskGroupContainerCommunication = reportTaskGroupCommunication(
                             lastTaskGroupContainerCommunication, taskCountInThisTaskGroup);
-
                     LOG.info("taskGroup[{}] completed it's tasks.", this.taskGroupId);
                     break;
                 }
@@ -300,7 +329,7 @@ public class TaskGroupContainer extends AbstractContainer {
 
                     //taskMonitor对于正在运行的task，每reportIntervalInMillSec进行检查
                     for(TaskExecutor taskExecutor:runTasks){
-                        taskMonitor.report(taskExecutor.getTaskId(),this.containerCommunicator.getCommunication(taskExecutor.getTaskId()));
+                        taskMonitor.report(taskExecutor.getTaskId(),this.tgContainerCommunicator.getTaskCommunication(taskExecutor.getTaskId()));
                     }
 
                 }
@@ -384,11 +413,14 @@ public class TaskGroupContainer extends AbstractContainer {
         Communication reportCommunication = CommunicationTool.getReportCommunication(nowTaskGroupContainerCommunication,
                 lastTaskGroupContainerCommunication, taskCount);
         this.containerCommunicator.report(reportCommunication);
+        this.tgContainerCommunicator.getTaskCommunicationMap().entrySet().forEach(entry -> {
+            this.tgContainerCommunicator.reportTaskCommunication(entry.getKey(), entry.getValue());
+        });
         return reportCommunication;
     }
 
     private void markCommunicationFailed(Integer taskId){
-        Communication communication = containerCommunicator.getCommunication(taskId);
+        Communication communication = this.tgContainerCommunicator.getTaskCommunication(taskId);
         communication.setState(State.FAILED);
     }
 
@@ -436,8 +468,7 @@ public class TaskGroupContainer extends AbstractContainer {
              * 由taskId得到该taskExecutor的Communication
              * 要传给readerRunner和writerRunner，同时要传给channel作统计用
              */
-            this.taskCommunication = containerCommunicator
-                    .getCommunication(taskId);
+            this.taskCommunication = tgContainerCommunicator.getTaskCommunication(taskId);
             Validate.notNull(this.taskCommunication,
                     String.format("taskId[%d]的Communication没有注册过", taskId));
             this.channel = ClassUtil.instantiate(channelClazz,
@@ -478,6 +509,7 @@ public class TaskGroupContainer extends AbstractContainer {
         }
 
         public void doStart() {
+            this.taskCommunication.setState(State.RUNNING);
             this.writerThread.start();
 
             // reader没有起来，writer不可能结束

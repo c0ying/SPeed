@@ -1,13 +1,13 @@
 package com.alibaba.datax.core.statistics.container.collector;
 
-import java.util.List;
-import java.util.Map;
-
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.LocalJobCommunicationManager;
 import com.alibaba.datax.core.util.container.CoreConstant;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
+
+import java.util.List;
+import java.util.Map;
 
 public class ProcessInnerJobCollector extends AbstractJobCollector {
 
@@ -51,6 +51,11 @@ public class ProcessInnerJobCollector extends AbstractJobCollector {
 	@Override
 	public Communication getTGCommunication(Integer taskGroupId) {
 		return LocalJobCommunicationManager.getInstance().getTaskGroupCommunication(getJobId(), taskGroupId);
+	}
+
+	@Override
+	public Communication getJobCommunication() {
+		return LocalJobCommunicationManager.getInstance().getJobCommunication(getJobId());
 	}
 
 }

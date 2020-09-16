@@ -1,16 +1,15 @@
 package com.alibaba.datax.core.statistics.communication;
 
+import com.alibaba.datax.common.base.BaseObject;
+import com.alibaba.datax.dataxservice.face.domain.enums.State;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
-
-import com.alibaba.datax.common.base.BaseObject;
-import com.alibaba.datax.dataxservice.face.domain.enums.State;
 
 /**
  * DataX所有的状态及统计信息交互类，job、taskGroup、task等的消息汇报都走该类
@@ -86,7 +85,7 @@ public class Communication extends BaseObject implements Cloneable {
     }
 
     public synchronized String getThrowableMessage() {
-        return this.throwable == null ? "" : this.throwable.getMessage();
+        return this.throwable == null ? "" : StringUtils.isNotBlank(this.throwable.getMessage())?this.throwable.getMessage():this.getThrowable().toString();
     }
 
     public void setThrowable(Throwable throwable) {
@@ -284,8 +283,7 @@ public class Communication extends BaseObject implements Cloneable {
     }
 
     /**
-     * 合并state，优先级： (Failed | Killed) > Running > Success
-     * killing 状态只在 Job 自身状态上才有.
+     * 合并state，优先级：Killing > (Failed | Killed ) > Running > Success
      */
     public synchronized State mergeStateFrom(final Communication otherComm) {
         State retState = this.getState();
@@ -293,7 +291,6 @@ public class Communication extends BaseObject implements Cloneable {
             return retState;
         }
 
-        //只用于job的state合并
         if (this.state == State.KILLING || otherComm.getState() == State.KILLING) {
         	retState = State.KILLING;
 		}else {

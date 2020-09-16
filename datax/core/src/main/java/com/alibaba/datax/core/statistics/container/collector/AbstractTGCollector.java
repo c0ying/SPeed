@@ -1,10 +1,5 @@
 package com.alibaba.datax.core.statistics.container.collector;
 
-import java.util.Map;
-
-import com.alibaba.datax.core.statistics.communication.Communication;
-import com.alibaba.datax.core.statistics.communication.LocalTGCommunicationManager;
-
 public abstract class AbstractTGCollector implements TGCollector{
 	
 	
@@ -13,11 +8,6 @@ public abstract class AbstractTGCollector implements TGCollector{
 		this.taskGroupId = taskGroupId;
 	}
 	
-	@Override
-	public Map<Integer, Communication> getCommunicationMap() {
-		return LocalTGCommunicationManager.getInstance().get(getJobId(), getTaskGroupId());
-	}
-
 	private Long jobId;
 	private Integer taskGroupId;
 

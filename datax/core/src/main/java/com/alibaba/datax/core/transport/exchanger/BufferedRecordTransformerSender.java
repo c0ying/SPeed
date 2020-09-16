@@ -1,24 +1,23 @@
 package com.alibaba.datax.core.transport.exchanger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.lang.Validate;
-
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.alibaba.datax.common.element.TerminateRecord;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.transformer.TransformerExecution;
 import com.alibaba.datax.core.transport.channel.Channel;
-import com.alibaba.datax.core.transport.record.TerminateRecord;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 import com.alibaba.datax.core.util.container.CoreConstant;
+import org.apache.commons.lang.Validate;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BufferedRecordTransformerSender extends TransformerExchanger implements RecordSender{
 
@@ -69,7 +68,7 @@ public class BufferedRecordTransformerSender extends TransformerExchanger implem
             RECORD_CLASS = ((Class<? extends Record>) Class
                     .forName(configuration.getString(
                             CoreConstant.DATAX_CORE_TRANSPORT_RECORD_CLASS,
-                            "com.alibaba.datax.core.transport.record.DefaultRecord")));
+                            "com.alibaba.datax.common.element.DefaultRecord")));
         } catch (Exception e) {
             throw DataXException.asDataXException(
                     FrameworkErrorCode.CONFIG_ERROR, e);

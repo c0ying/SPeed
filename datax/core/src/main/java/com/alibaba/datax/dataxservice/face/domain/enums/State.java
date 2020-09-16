@@ -23,6 +23,15 @@ public enum State implements EnumVal {
         return value;
     }
 
+    public static State fromValue(int value){
+        for (State state : State.values()) {
+            if (state.value == value){
+                return state;
+            }
+        }
+        throw new IllegalArgumentException("Unkown value");
+    }
+
 
     public boolean isFinished() {
         return this == KILLED || this == FAILED || this == SUCCEEDED;

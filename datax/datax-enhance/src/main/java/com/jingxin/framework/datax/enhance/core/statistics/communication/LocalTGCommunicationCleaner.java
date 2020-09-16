@@ -1,12 +1,12 @@
 package com.jingxin.framework.datax.enhance.core.statistics.communication;
 
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.LocalJobCommunicationManager;
 import com.alibaba.datax.core.statistics.communication.LocalTGCommunicationManager;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
+
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class LocalTGCommunicationCleaner implements Runnable{
 
@@ -18,7 +18,7 @@ public class LocalTGCommunicationCleaner implements Runnable{
 			if (jobCommunication.getState().value() >= State.KILLED.value()) {
 				if(jobCommunication.getTimestamp() + TimeUnit.HOURS.toMillis(8) > System.currentTimeMillis()) {
 					LocalJobCommunicationManager.getInstance().clean(jobId);
-					LocalTGCommunicationManager.getInstance().clearAll(jobId);
+					LocalTGCommunicationManager.getInstance().clean(jobId);
 				}
 			}
 		}

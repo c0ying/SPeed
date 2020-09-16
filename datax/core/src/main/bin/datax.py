@@ -14,8 +14,6 @@ from optparse import OptionGroup
 from string import Template
 import codecs
 import platform
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 def isWindows():
     return platform.system() == 'Windows'
@@ -113,10 +111,10 @@ def getOptionParser():
 def generateJobConfigTemplate(reader, writer):
     readerRef = "Please refer to the %s document:\n     https://github.com/alibaba/DataX/blob/master/%s/doc/%s.md \n" % (reader,reader,reader)
     writerRef = "Please refer to the %s document:\n     https://github.com/alibaba/DataX/blob/master/%s/doc/%s.md \n " % (writer,writer,writer)
-    print readerRef
-    print writerRef
+    print(readerRef)
+    print(writerRef)
     jobGuid = 'Please save the following configuration as a json file and  use\n     python {DATAX_HOME}/bin/datax.py {JSON_FILE_NAME}.json \nto run the job.\n'
-    print jobGuid
+    print(jobGuid)
     jobTemplate={
       "job": {
         "setting": {
@@ -136,15 +134,15 @@ def generateJobConfigTemplate(reader, writer):
     writerTemplatePath = "%s/plugin/writer/%s/plugin_job_template.json" % (DATAX_HOME,writer)
     try:
       readerPar = readPluginTemplate(readerTemplatePath);
-    except Exception, e:
-       print "Read reader[%s] template error: can\'t find file %s" % (reader,readerTemplatePath)
+    except Exception as e:
+       print("Read reader[%s] template error: can\'t find file %s" % (reader,readerTemplatePath))
     try:
       writerPar = readPluginTemplate(writerTemplatePath);
-    except Exception, e:
-      print "Read writer[%s] template error: : can\'t find file %s" % (writer,writerTemplatePath)
+    except Exception as e:
+      print("Read writer[%s] template error: : can\'t find file %s" % (writer,writerTemplatePath))
     jobTemplate['job']['content'][0]['reader'] = readerPar;
     jobTemplate['job']['content'][0]['writer'] = writerPar;
-    print json.dumps(jobTemplate, indent=4, sort_keys=True)
+    print(json.dumps(jobTemplate, indent=4, sort_keys=True))
 
 def readPluginTemplate(plugin):
     with open(plugin, 'r') as f:
@@ -170,7 +168,7 @@ def buildStartCommand(options, args):
 
     if options.remoteDebug:
         tempJVMCommand = tempJVMCommand + " " + REMOTE_DEBUG_CONFIG
-        print 'local ip: ', getLocalIp()
+        print('local ip: ', getLocalIp())
 
     if options.loglevel:
         tempJVMCommand = tempJVMCommand + " " + ("-Dloglevel=%s" % (options.loglevel))
@@ -200,11 +198,11 @@ def buildStartCommand(options, args):
 
 
 def printCopyright():
-    print '''
+    print('''
 DataX (%s), From Alibaba !
 Copyright (C) 2010-2017, Alibaba Group. All Rights Reserved.
 
-''' % DATAX_VERSION
+''' % DATAX_VERSION)
     sys.stdout.flush()
 
 
@@ -225,7 +223,14 @@ if __name__ == "__main__":
     child_process = subprocess.Popen(startCommand, stdout=subprocess.PIPE, stderr=sys.stdout, shell=True)
     register_signal()
     while child_process.poll() is None:
-      r = child_process.stdout.readline().decode('UTF-8')
-      sys.stdout.write(r)
+        line = child_process.stdout.readline().decode('UTF-8')
+        newline = ''
+        for c in line:
+            # 由于splitPK时，如果是按字符串切割会导致异常的字符，排除ascii前32个字符，但保留换行和制表符
+            idx = ord(c)
+            if idx < 32 and idx != 9 and idx != 10:
+                continue
+            newline += c
+        sys.stdout.write(newline)
 
     sys.exit(child_process.returncode)

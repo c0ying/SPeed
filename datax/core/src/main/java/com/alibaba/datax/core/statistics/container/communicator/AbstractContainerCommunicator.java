@@ -1,20 +1,18 @@
 package com.alibaba.datax.core.statistics.container.communicator;
 
 
-import java.util.List;
-import java.util.Map;
-
 import com.alibaba.datax.common.statistics.VMInfo;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
-import com.alibaba.datax.core.statistics.container.report.AbstractReporter;
 import com.alibaba.datax.core.util.container.CoreConstant;
 import com.alibaba.datax.dataxservice.face.domain.enums.State;
+
+import java.util.List;
 
 public abstract class AbstractContainerCommunicator {
     private Configuration configuration;
 //    private AbstractCollector collector;
-    private AbstractReporter reporter;
+//    private AbstractReporter reporter;
 
     private Long jobId;
 
@@ -30,17 +28,17 @@ public abstract class AbstractContainerCommunicator {
 //        return collector;
 //    }
 
-    public AbstractReporter getReporter() {
-        return reporter;
-    }
+//    public AbstractReporter getReporter() {
+//        return reporter;
+//    }
 
 //    public void setCollector(AbstractCollector collector) {
 //        this.collector = collector;
 //    }
 
-    public void setReporter(AbstractReporter reporter) {
-        this.reporter = reporter;
-    }
+//    public void setReporter(AbstractReporter reporter) {
+//        this.reporter = reporter;
+//    }
 
     public Long getJobId() {
         return jobId;
@@ -60,14 +58,14 @@ public abstract class AbstractContainerCommunicator {
 
     public abstract State collectState();
 
-    public abstract Communication getCommunication(Integer id);
-
-    public abstract Map<Integer, Communication> getCommunicationMap();
-
-    public void resetCommunication(Integer id){
-        Map<Integer, Communication> map = getCommunicationMap();
-        map.put(id, new Communication());
-    }
+//    public abstract Communication getCommunication(Integer id);
+//
+//    public abstract Map<Integer, Communication> getCommunicationMap();
+//
+//    public void resetCommunication(Integer id){
+//        Map<Integer, Communication> map = getCommunicationMap();
+//        map.put(id, new Communication());
+//    }
 
     public void reportVmInfo(){
         long now = System.currentTimeMillis();

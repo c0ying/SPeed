@@ -4,8 +4,8 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.CommunicationTool;
-import com.alibaba.datax.core.statistics.communication.LocalJobCommunicationManager;
 import com.alibaba.datax.core.statistics.container.communicator.AbstractContainerCommunicator;
+import com.alibaba.datax.core.statistics.container.communicator.job.AbstractJobContainerCommunicator;
 import com.alibaba.datax.core.util.ErrorRecordChecker;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 import com.alibaba.datax.core.util.container.CoreConstant;
@@ -22,7 +22,8 @@ public abstract class AbstractScheduler {
 
     private ErrorRecordChecker errorLimit;
 
-    private AbstractContainerCommunicator containerCommunicator;
+    //@cyh
+    protected AbstractJobContainerCommunicator jobContainerCommunicator;
 
     private Long jobId;
 
@@ -30,8 +31,8 @@ public abstract class AbstractScheduler {
         return jobId;
     }
 
-    public AbstractScheduler(AbstractContainerCommunicator containerCommunicator) {
-        this.containerCommunicator = containerCommunicator;
+    public AbstractScheduler(AbstractJobContainerCommunicator jobContainerCommunicator) {
+        this.jobContainerCommunicator = jobContainerCommunicator;
     }
 
     public void schedule(List<Configuration> configurations) {
@@ -50,14 +51,15 @@ public abstract class AbstractScheduler {
         /**
          * 给 taskGroupContainer 的 Communication 注册
          */
-        this.containerCommunicator.registerCommunication(configurations);
+        this.jobContainerCommunicator.registerCommunication(configurations);
 
         int totalTasks = calculateTaskCount(configurations);
         startAllTaskGroup(configurations);
 
 //        Communication lastJobContainerCommunication = new Communication();
         //@cyh
-        Communication lastJobContainerCommunication = LocalJobCommunicationManager.getInstance().getJobCommunication(jobId);
+//        Communication lastJobContainerCommunication = LocalJobCommunicationManager.getInstance().getJobCommunication(jobId);
+        Communication lastJobContainerCommunication = this.jobContainerCommunicator.getJobCommunication();
 
         long lastReportTimeStamp = System.currentTimeMillis();
         try {
@@ -74,7 +76,7 @@ public abstract class AbstractScheduler {
                  * above steps, some ones should report info to DS
                  *
                  */
-                Communication nowJobContainerCommunication = this.containerCommunicator.collect();
+                Communication nowJobContainerCommunication = this.jobContainerCommunicator.collect();
                 nowJobContainerCommunication.setTimestamp(System.currentTimeMillis());
                 LOG.debug(nowJobContainerCommunication.toString());
 
@@ -84,7 +86,7 @@ public abstract class AbstractScheduler {
                     Communication reportCommunication = CommunicationTool
                             .getReportCommunication(nowJobContainerCommunication, lastJobContainerCommunication, totalTasks);
 
-                    this.containerCommunicator.report(reportCommunication);
+                    this.jobContainerCommunicator.report(reportCommunication);
                     lastReportTimeStamp = now;
                     lastJobContainerCommunication = nowJobContainerCommunication;
                 }
@@ -94,7 +96,7 @@ public abstract class AbstractScheduler {
                     errorLimit.checkRecordLimit(nowJobContainerCommunication);
                 } catch (Exception e) {
                     LOG.error("error threshold reached and stopping current running task", e);
-                    dealFailedStat(this.containerCommunicator, e);
+                    dealFailedStat(this.jobContainerCommunicator, e);
                     throw e;
                 }
 
@@ -104,9 +106,10 @@ public abstract class AbstractScheduler {
                 }
 
                 if (isJobKilling(this.getJobId())) {
-                    dealKillingStat(this.containerCommunicator, totalTasks);
+                    dealKillingStat(this.jobContainerCommunicator, totalTasks);
+                    break;
                 } else if (nowJobContainerCommunication.getState() == State.FAILED) {
-                    dealFailedStat(this.containerCommunicator, nowJobContainerCommunication.getThrowable());
+                    dealFailedStat(this.jobContainerCommunicator, nowJobContainerCommunication.getThrowable());
                 }
 
                 Thread.sleep(jobSleepIntervalInMillSec);
